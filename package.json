@@ -4,6 +4,7 @@
   "description": "This is a Twitter bot for my personal and non-business Twitter account",
   "main": "bot.js",
   "scripts": {
+    "start": "node bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Lindsey Handley",
