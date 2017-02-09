@@ -1,0 +1,11 @@
+{
+  "name": "twitterbot",
+  "version": "1.0.0",
+  "description": "This is a Twitter bot for my personal and non-business Twitter account",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lindsey Handley",
+  "license": "ISC"
+}
