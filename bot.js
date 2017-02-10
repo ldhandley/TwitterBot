@@ -5,42 +5,63 @@ var Twitter = new twit(config);
 //RETWEET BOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 var retweet = function(){
-  var queries = ['#PEEOTUS', '#TrumpsAmerica', '#TheResistance'];
-  var query = ranDom(queries);
-  console.log("Used the query " + query + " to retweet!");
-
-  var params = {
-    q: query,
-    result_type: 'recent',
-    lang: 'en'
-  }
-
-  Twitter.get('search/tweets', params, function(err, data) {
+  var recent_retweet_users = [];
+  //get last 10 retweets
+  Twitter.get('statuses/user_timeline', {screen_name:"LindzyHop",count:10,include_rts:true}, function(err,data){
     //if there are no errors
     if(!err){
-      //grab ID of tweet to retweet
-      var retweetId = data.statuses[0].id_str;
-      //tell Twitter to retweet
-      Twitter.post(
-	'statuses/retweet/:id', 
-	{
-      	  id: retweetId
-        },
-	function(err, response) {
-	  if(response){
-	    console.log('Retweeted ' + data.statuses[0].id_str);
+      //save recently retweeted users to list
+      for(var i = 0; i < data.length; i++){
+	if(typeof(data[i].retweeted_status) != "undefined")
+      	  recent_retweet_users.push(data[i].retweeted_status.user.screen_name);
+      }
+
+      //filter out duplicate recently tweeted users
+      var users_to_exclude = recent_retweet_users.filter(function(item, pos) {
+	return recent_retweet_users.indexOf(item) == pos;
+      })	
+
+          //potential hashtags to retweet with
+	  var queries = ['#PEEOTUS', '#TrumpsAmerica', '#TheResistance'];
+	  //exclude recently retweeted users and pick random hashtag
+	  var query = ranDom(queries) + " " + exclude(users_to_exclude); 
+
+	  var params = {
+	    q: query,
+	    result_type: 'mixed',
+	    lang: 'en'
 	  }
-	  if(err) {
-	    console.log('Something went wrong while retweeting... Duplication maybe?');
-	  }
-	});
-    }
-    //if unable to search a tweet
-    else{
-    	console.log('Something went wrong while searching...');
+	  console.log("Used the query " + query + " to retweet.");
+
+
+	  Twitter.get('search/tweets', params, function(err, data) {
+	    //if there are no errors
+	    if(!err){
+	      //grab ID of tweet to retweet
+	      var retweetId = data.statuses[0].id_str;
+	      //tell Twitter to retweet
+	      Twitter.post(
+		'statuses/retweet/:id', 
+		{
+		  id: retweetId
+		},
+		function(err, response) {
+		  if(response){
+		    console.log('Retweeted ' + data.statuses[0].id_str + ' from ' + data.statuses[0].user.screen_name);
+		  }
+		  if(err) {
+		    console.log('Something went wrong while retweeting... Duplication maybe?');
+		  }
+		});
+	    }
+	    //if unable to search a tweet
+	    else{
+		console.log('Something went wrong while searching...');
+	    }
+	  });
     }
   });
-}
+ }
 
 // grab & retweet as soon as program is running...
 retweet();
@@ -83,7 +104,7 @@ var favoriteTweet = function(){
 }
 
 //grab and favorite as soon as program is running
-favoriteTweet();
+//favoriteTweet();
 
 //favorite a new tweet every 60 minutes
 setInterval(favoriteTweet, 3600000);
@@ -92,4 +113,12 @@ setInterval(favoriteTweet, 3600000);
 function ranDom(arr){
   var index = Math.floor(Math.random()*arr.length);
   return arr[index];
+}
+
+function exclude(arr){
+  var result = "";
+  for(var i=0; i < arr.length; i++){
+    result = result + "-from:" + arr[i] + " ";
+  }
+  return result;
 }
